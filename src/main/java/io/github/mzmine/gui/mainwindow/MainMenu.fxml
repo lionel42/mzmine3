@@ -122,6 +122,8 @@
         userData="io.github.mzmine.modules.io.import_rawdata_imzml.ImzMLImportModule"/>
       <MenuItem onAction="#runModule" text="netCDF"
         userData="io.github.mzmine.modules.io.import_rawdata_netcdf.NetCDFImportModule"/>
+      <MenuItem onAction="#runModule" text="TW hdf5"
+        userData="io.github.mzmine.modules.io.import_rawdata_tw_hdf5.TwHdf5ImportModule"/>
       <MenuItem onAction="#runModule" text="mzXML"
         userData="io.github.mzmine.modules.io.import_rawdata_mzxml.MzXMLImportModule"/>
       <MenuItem onAction="#runModule" text="mzData"
