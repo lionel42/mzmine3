@@ -25,52 +25,31 @@
 
 package io.github.mzmine.modules.io.import_rawdata_tw_hdf5;
 
-import java.io.File;
 import java.util.List;
 import io.github.mzmine.parameters.Parameter;
 import io.github.mzmine.parameters.impl.SimpleParameterSet;
 import io.github.mzmine.parameters.parametertypes.filenames.FileNamesParameter;
-import io.github.mzmine.util.ExitCode;
-import javafx.stage.FileChooser;
+import io.github.mzmine.parameters.parametertypes.ranges.MZRangeParameter;
+import io.github.mzmine.parameters.parametertypes.selectors.ScanSelectionParameter;
 import javafx.stage.FileChooser.ExtensionFilter;
 
 public class TwHdf5ImportParameters extends SimpleParameterSet {
 
   private static final List<ExtensionFilter> extensions = List.of( //
-      new ExtensionFilter("netCDF files", "*.h5"), //
+      new ExtensionFilter("h5 files", "*.h5"), //
       new ExtensionFilter("All files", "*.*") //
   );
 
   public static final FileNamesParameter fileNames =
       new FileNamesParameter("File names", "", extensions);
 
-  public TwHdf5ImportParameters() {
-    super(new Parameter[] {fileNames});
-  }
-
-  @Override
-  public ExitCode showSetupDialog(boolean valueCheckRequired) {
-
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Import raw data files");
-    fileChooser.getExtensionFilters().addAll(extensions);
-
-    File lastFiles[] = getParameter(fileNames).getValue();
-    if ((lastFiles != null) && (lastFiles.length > 0)) {
-      File currentDir = lastFiles[0].getParentFile();
-      if ((currentDir != null) && (currentDir.exists())) {
-        fileChooser.setInitialDirectory(currentDir);
-      }
+      
+    public static final ScanSelectionParameter scanSelection = new ScanSelectionParameter();
+    
+    public static final MZRangeParameter mzRange = new MZRangeParameter(false);
+    
+    public TwHdf5ImportParameters() {
+      super(new Parameter[] {fileNames, scanSelection, mzRange});
     }
-
-    List<File> selectedFiles = fileChooser.showOpenMultipleDialog(null);
-    if (selectedFiles == null) {
-      return ExitCode.CANCEL;
-    }
-    getParameter(fileNames).setValue(selectedFiles.toArray(new File[0]));
-
-    return ExitCode.OK;
-
-  }
 
 }
