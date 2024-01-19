@@ -359,8 +359,6 @@ public class TwHdf5ImportTask extends AbstractTask {
     // Get coordinates in the file
     int dim0 = scanNum / timingDataVariable.getDimension(dimTime1).getLength();
     int dim1 = scanNum % timingDataVariable.getDimension(dimTime1).getLength();
-    // debug: show coordinates
-    System.out.println("dim0: " + dim0 + " dim1: " + dim1 + "scanNum: " + scanNum);
 
     int[] origin = new int[] { dim0, dim1, 0, tofidStart };
     int[] size = new int[] { 1, 1, 1, tofidEnd - tofidStart };
