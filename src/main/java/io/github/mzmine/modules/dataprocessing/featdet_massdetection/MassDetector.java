@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2022 The MZmine Development Team
+ * Copyright (c) 2004-2024 The MZmine Development Team
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -35,15 +35,18 @@ import io.github.mzmine.parameters.ParameterSet;
 public interface MassDetector extends MZmineModule {
   public static final double[][] EMPTY_DATA = new double[2][0];
 
+  MassDetector create(ParameterSet params);
+
+  boolean filtersActive();
   /**
    * Returns mass and intensity values detected in given spectrum
    *
    * @param spectrum
    * @return [mzs, intensities][data]
    */
-  double[][] getMassValues(MassSpectrum spectrum, ParameterSet parameters);
+  double[][] getMassValues(MassSpectrum spectrum);
 
-  default double[][] getMassValues(double[] mzs, double[] intensities, ParameterSet parameters) {
+  default double[][] getMassValues(double[] mzs, double[] intensities) {
     throw new UnsupportedOperationException("Method not implemented. Please implement me.");
   }
 }
