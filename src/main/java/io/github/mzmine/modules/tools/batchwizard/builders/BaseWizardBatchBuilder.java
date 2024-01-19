@@ -48,14 +48,12 @@ import io.github.mzmine.modules.dataprocessing.featdet_chromatogramdeconvolution
 import io.github.mzmine.modules.dataprocessing.featdet_chromatogramdeconvolution.minimumsearch.MinimumSearchFeatureResolverParameters;
 import io.github.mzmine.modules.dataprocessing.featdet_imsexpander.ImsExpanderModule;
 import io.github.mzmine.modules.dataprocessing.featdet_imsexpander.ImsExpanderParameters;
-import io.github.mzmine.modules.dataprocessing.featdet_massdetection.DetectIsotopesParameter;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.MassDetectionModule;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.MassDetectionParameters;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.MassDetector;
+import io.github.mzmine.modules.dataprocessing.featdet_massdetection.MassDetectors;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.SelectedScanTypes;
-import io.github.mzmine.modules.dataprocessing.featdet_massdetection.auto.AutoMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.auto.AutoMassDetectorParameters;
-import io.github.mzmine.modules.dataprocessing.featdet_massdetection.factor_of_lowest.FactorOfLowestMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.factor_of_lowest.FactorOfLowestMassDetectorParameters;
 import io.github.mzmine.modules.dataprocessing.featdet_mobilityscanmerger.MobilityScanMergerModule;
 import io.github.mzmine.modules.dataprocessing.featdet_mobilityscanmerger.MobilityScanMergerParameters;
@@ -217,12 +215,12 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
   protected final Polarity polarity;
   // csv database
   private final boolean checkLocalCsvDatabase;
+  // lipid annotation
+  private final boolean annotateLipids;
   private @NotNull String csvFilterSamplesColumn = "";
   private MassOptions csvMassOptions;
   private List<ImportType> csvColumns;
   private File csvLibraryFile;
-  // lipid annotation
-  private final boolean annotateLipids;
 
   protected BaseWizardBatchBuilder(final WizardSequence steps) {
     super(steps);
@@ -839,6 +837,7 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
     param.setParameter(RowsFilterParameters.REMOVE_ROW, RowsFilterChoices.KEEP_MATCHING);
     param.setParameter(RowsFilterParameters.MS2_Filter, false);
     param.setParameter(RowsFilterParameters.KEEP_ALL_MS2, true);
+    param.setParameter(RowsFilterParameters.KEEP_ALL_ANNOTATED, false);
     param.setParameter(RowsFilterParameters.Reset_ID, false);
     param.setParameter(RowsFilterParameters.massDefect, false);
     param.setParameter(RowsFilterParameters.handleOriginal, handleOriginalFeatureLists);
@@ -871,25 +870,13 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
 
     // use factor of lowest or auto mass detector
     // factor of lowest only works on centroid for now
-    Class<? extends MassDetector> massDetectorClass = null;
+    MassDetector massDetector = null;
     ParameterSet detectorParam = null;
 
     switch (massDetectorOption.getValueType()) {
       case ABSOLUTE_NOISE_LEVEL -> {
-        massDetectorClass = AutoMassDetector.class;
-        detectorParam = MZmineCore.getConfiguration().getModuleParameters(massDetectorClass)
-            .cloneParameterSet();
-        // per default do not detect isotope signals below noise. this might introduce too many signals
-        // for the isotope finder later on and confuse users
-        detectorParam.setParameter(AutoMassDetectorParameters.detectIsotopes, false);
-        final DetectIsotopesParameter detectIsotopesParameter = detectorParam.getParameter(
-            AutoMassDetectorParameters.detectIsotopes).getEmbeddedParameters();
-        detectIsotopesParameter.setParameter(DetectIsotopesParameter.elements,
-            List.of(new Element("H"), new Element("C"), new Element("N"), new Element("O"),
-                new Element("S")));
-        detectIsotopesParameter.setParameter(DetectIsotopesParameter.isotopeMzTolerance,
-            mzTolFeaturesIntraSample);
-        detectIsotopesParameter.setParameter(DetectIsotopesParameter.maxCharge, 2);
+        massDetector = MassDetectors.AUTO.getDefaultModule();
+        detectorParam = MassDetectors.AUTO.getParametersCopy();
 
         final double noiseLevel;
         if (msLevel == 1 && scanTypes == SelectedScanTypes.MOBLITY_SCANS) {
@@ -903,9 +890,8 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
         detectorParam.setParameter(AutoMassDetectorParameters.noiseLevel, noiseLevel);
       }
       case FACTOR_OF_LOWEST_SIGNAL -> {
-        massDetectorClass = FactorOfLowestMassDetector.class;
-        detectorParam = MZmineCore.getConfiguration().getModuleParameters(massDetectorClass)
-            .cloneParameterSet();
+        massDetector = MassDetectors.FACTOR_OF_LOWEST.getDefaultModule();
+        detectorParam = MassDetectors.FACTOR_OF_LOWEST.getParametersCopy();
         double noiseFactor = msLevel >= 2 ? massDetectorOption.getMsnNoiseLevel()
             : massDetectorOption.getMs1NoiseLevel();
         detectorParam.setParameter(FactorOfLowestMassDetectorParameters.noiseFactor, noiseFactor);
@@ -931,8 +917,7 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
     }
     param.setParameter(MassDetectionParameters.scanTypes, scanTypes);
     param.setParameter(MassDetectionParameters.massDetector,
-        new MZmineProcessingStepImpl<>(MZmineCore.getModuleInstance(massDetectorClass),
-            detectorParam));
+        new MZmineProcessingStepImpl<>(massDetector, detectorParam));
 
     q.add(new MZmineProcessingStepImpl<>(MZmineCore.getModuleInstance(MassDetectionModule.class),
         param));
@@ -1011,8 +996,7 @@ public abstract class BaseWizardBatchBuilder extends WizardBatchBuilder {
   }
 
   protected void makeAndAddRetentionTimeCalibration(BatchQueue q, MZTolerance mzTolInterSample,
-      RTTolerance interSampleRtTol,
-      OriginalFeatureListOption handleOriginalFeatureLists) {
+      RTTolerance interSampleRtTol, OriginalFeatureListOption handleOriginalFeatureLists) {
 
     final ParameterSet param = MZmineCore.getConfiguration()
         .getModuleParameters(RTCalibrationModule.class).cloneParameterSet();
