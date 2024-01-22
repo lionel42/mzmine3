@@ -33,16 +33,21 @@ import io.github.mzmine.modules.dataprocessing.featdet_massdetection.factor_of_l
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.localmaxima.LocalMaxMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.recursive.RecursiveMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.wavelet.WaveletMassDetector;
+import io.github.mzmine.modules.dataprocessing.featdet_massdetection.zscore.ZScoreMassDetector;
 import io.github.mzmine.parameters.ParameterSet;
 import java.util.Arrays;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public enum MassDetectors {
-  AUTO(AutoMassDetector.class), CENTROID(CentroidMassDetector.class), EXACT(
-      ExactMassDetector.class), FACTOR_OF_LOWEST(FactorOfLowestMassDetector.class), LOCAL_MAX(
-      LocalMaxMassDetector.class), RECURSIVE(RecursiveMassDetector.class), WAVELET(
-      WaveletMassDetector.class);
+  AUTO              (AutoMassDetector.class),
+  CENTROID          (CentroidMassDetector.class),
+  EXACT             (ExactMassDetector.class),
+  FACTOR_OF_LOWEST  (FactorOfLowestMassDetector.class),
+  LOCAL_MAX         (LocalMaxMassDetector.class),
+  RECURSIVE         (RecursiveMassDetector.class),
+  WAVELET           (WaveletMassDetector.class),
+  ZSCORE            (ZScoreMassDetector.class);
 
   /**
    * This instance is never used for mass detection but contains the name and factory logic
