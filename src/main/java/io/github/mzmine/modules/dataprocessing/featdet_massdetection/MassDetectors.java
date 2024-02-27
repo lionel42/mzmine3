@@ -34,6 +34,7 @@ import io.github.mzmine.modules.dataprocessing.featdet_massdetection.localmaxima
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.recursive.RecursiveMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.wavelet.WaveletMassDetector;
 import io.github.mzmine.modules.dataprocessing.featdet_massdetection.zscore.ZScoreMassDetector;
+import io.github.mzmine.modules.dataprocessing.featdet_massdetection.functionfitting.FunctionFittingMassDetector;
 import io.github.mzmine.parameters.ParameterSet;
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +48,8 @@ public enum MassDetectors {
   LOCAL_MAX         (LocalMaxMassDetector.class),
   RECURSIVE         (RecursiveMassDetector.class),
   WAVELET           (WaveletMassDetector.class),
-  ZSCORE            (ZScoreMassDetector.class);
+  ZSCORE            (ZScoreMassDetector.class),
+  FUNCTIONFITTING   (FunctionFittingMassDetector.class);
 
   /**
    * This instance is never used for mass detection but contains the name and factory logic
